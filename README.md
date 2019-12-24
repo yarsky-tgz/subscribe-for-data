@@ -1,12 +1,30 @@
 # subscribe-for-data
 
-Tool, that fills objects (models?) with related data. 
+Speed booster for multiple related models properties fetching & mixing to your model.
+
+##   
 
  * DB agnostic. 
+ * flexible query condition
  * one DB query per subscription.
  * all queries running parallel, starting at same moment, you choose then 
- * No data loops inside, stream based.
+ * No loops, stream based.
  * zero dependencies
+ 
+## Workflow description 
+
+You form `subscription` around your **related model** with `makeSubscription(model, options)`
+
+You can form any count of subscriptions, you need.
+
+Then you can to `subscription.add(target)` **target objects** you want to mix in 
+properties from **related model** data. 
+
+After you've added all needed **targets** to all `subscriptions` you can anytime run 
+`fillSubscriptions()` 
+
+`fillSubscriptions()` assigns data as it goes via **stream** with auto **parallelization** 
+if multiple `subscriptions` created. One query per `subscription` is executed.
  
 It generates mongo condition to query your source, but this is just default 
 behavior
@@ -53,6 +71,8 @@ const AnotherRelatedModel = require('./AnotherRelatedModel');
   console.log(roots[0]);
 })();
 ```
+
+Expected output:
 
 ```json
 {

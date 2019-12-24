@@ -7,6 +7,13 @@ const defaultOptions = {
   getKey: item => item._id,
   getCondition: item => item._id,
   getStream: (source, condition) => source.find(condition).lean().cursor(),
+  getDataHandler: ({ targets, extractKey, isMultiple, targetField, sourceField }) => (foreign) => {
+    const target = targets[extractKey(foreign)];
+
+    if (assignData) return assignData(target, foreign);
+    if (!isMultiple) target[targetField] = foreign[sourceField];
+    else (target[targetField] = target[targetField] || []).push(foreign[sourceField]);
+  },
 };
 
 /**
@@ -29,6 +36,7 @@ const defaultOptions = {
  * @param {Function} options.getCondition returns condition, using target model (model.id by default)
  * @param {Function} options.extractKey returns unique key of target model from foreign model
  * @param {Boolean} options.isMultiple if one to many relation
+ * @param {Boolean} options.useEachAsync only for mongoose cursor
  * @param {String} options.foreignField If `getCondition` returns scalar values this field will be used for $in
  * @param {String} options.sourceField field to use of foreign model
  * @param {assignData} options.assignData (optional) Do model filling by itself, otherwise use `targetField`
@@ -69,25 +77,23 @@ function makeSubscription(source, options) {
  * @returns {Promise}
  */
 async function fillSubscriptions() {
-  if (isFilling) await new Promise(resolve => bus.once('release', resolve));
+  if (isFilling) await new Promise(resolve => bus.once('released', resolve));
 
   isFilling = true;
   const promises = awaiting
     .map(({
-      source, targetField, options: { extractKey, assignData, sourceField, getStream, isMultiple }, targets, condition,
-    }) => new Promise((resolve, reject) => getStream(source, condition)
-      .on('data', (foreign) => {
-        const target = targets[extractKey(foreign)];
-
-        if (assignData) return assignData(target, foreign);
-        if (!isMultiple) target[targetField] = foreign[sourceField];
-        else (target[targetField] = target[targetField] || []).push(foreign[sourceField]);
-      })
-      .on('error', reject)
-      .on('end', resolve)));
+      source, targetField, options: {
+        extractKey, assignData, sourceField, getStream, isMultiple, useEachAsync, getDataHandler,
+      }, targets, condition,
+    }) => useEachAsync ?
+      getStream(source, condition).eachAsync(getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField })) :
+      new Promise((resolve, reject) => getStream(source, condition)
+        .on('data', getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField }))
+        .on('error', reject)
+        .on('end', resolve)));
   awaiting.splice(0, awaiting.length);
   isFilling = false;
-  bus.emit('release');
+  bus.emit('released');
 
   return Promise.all(promises);
 }
