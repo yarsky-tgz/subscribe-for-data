@@ -1,3 +1,7 @@
+const EventEmitter = require('events');
+
+const bus = new EventEmitter();
+let isFilling = false;
 const awaiting = [];
 const defaultOptions = {
   getKey: item => item._id,
@@ -64,7 +68,10 @@ function makeSubscription(source, options) {
  * Fill subscribed targets
  * @returns {Promise}
  */
-function fillSubscriptions() {
+async function fillSubscriptions() {
+  if (isFilling) await new Promise(resolve => bus.once('release', resolve));
+
+  isFilling = true;
   const promises = awaiting
     .map(({
       source, targetField, options: { extractKey, assignData, sourceField, getStream, isMultiple }, targets, condition,
@@ -79,6 +86,8 @@ function fillSubscriptions() {
       .on('error', reject)
       .on('end', resolve)));
   awaiting.splice(0, awaiting.length);
+  isFilling = false;
+  bus.emit('release');
 
   return Promise.all(promises);
 }
