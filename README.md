@@ -35,15 +35,18 @@ const AnotherRelatedModel = require('./AnotherRelatedModel');
     sourceField: 'position'
   });
   const anotherRelatedSubscription = makeSubscription(AnotherRelatedModel, { // something completely different
-    getCondition: ({ mysteriousTimestamp, type }) => ({ type, updatedAt: { $gt: mysteriousTimestamp} }), // yoohoo, freedom! executed for each model you add
-    assignData: (root, { someField, otherType }) => {
+    getCondition({ mysteriousTimestamp, type }) {
+      return { type, updatedAt: { $gt: mysteriousTimestamp} };
+    }, 
+    assignData(root, { someField, otherType }) {
       (root.someFields = root.someField || []).push(someField);
       (root.otherTypes = root.otherTypes || new Set()).add(otherType);
     },
   });
   const roots = [];
   await RootModel.find({}).cursor().eachAsync((root) => {
-    [relatedSubscription, anotherRelatedSubscription].forEach(subscription => subscription.add(root)); // subscribed
+    [relatedSubscription, anotherRelatedSubscription]
+      .forEach(subscription => subscription.add(root)); // subscribed
     roots.push(root);
   });
   await fillSubscriptions(); // 2 DB queries executed in parallel, no loops then
