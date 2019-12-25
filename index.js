@@ -65,7 +65,7 @@ function use(defaultOptions) {
     isFilling = true;
     const promises = awaiting
       .map(({ source, targetField, options: {
-          extractKey, sourceField, getStream, isMultiple, useEachAsync, getDataHandler, parallel,
+          extractKey, sourceField, getStream, isMultiple, useEachAsync, getDataHandler, parallel, assignData
         }, targets, condition }) => useEachAsync ?
         getStream(source, condition).eachAsync(getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField, assignData }),
           { parallel }) :
