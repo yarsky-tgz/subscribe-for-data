@@ -34,10 +34,11 @@ function use(defaultOptions) {
    * @memberOf SubscribeForData
    * @returns {Object}
    */
-  function makeSubscription(source, options) {
+  function makeSubscription(source, outerOptions) {
+    const options = Object.assign({}, outerOptions, defaultOptions);
     const {
       getKey, getCondition, foreignField, baseCondition, defaultValue, targetField, getAddingMethod
-    } = Object.assign({}, options, defaultOptions);
+    } = options;
     options.extractKey = options.extractKey || (foreign => foreign[foreignField]);
     const targets = {};
     const condition = baseCondition || {};
@@ -64,12 +65,12 @@ function use(defaultOptions) {
     isFilling = true;
     const promises = awaiting
       .map(({ source, targetField, options: {
-          extractKey, assignData, sourceField, getStream, isMultiple, useEachAsync, getDataHandler, parallel,
+          extractKey, sourceField, getStream, isMultiple, useEachAsync, getDataHandler, parallel,
         }, targets, condition }) => useEachAsync ?
-        getStream(source, condition).eachAsync(getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField }),
+        getStream(source, condition).eachAsync(getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField, assignData }),
           { parallel }) :
         new Promise((resolve, reject) => getStream(source, condition)
-          .on('data', getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField }))
+          .on('data', getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField, assignData }))
           .on('error', reject)
           .on('end', resolve)));
     awaiting.splice(0, awaiting.length);

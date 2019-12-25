@@ -1,6 +1,6 @@
 {
   "name": "subscribe-for-data",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "description": "fills objects with related data. DB agnostic. One DB query per source, all queries running parallel. No loops inside, stream based.",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,18 @@
   "bugs": {
     "url": "https://github.com/yarsky-tgz/subscribe-for-data/issues"
   },
+  "keywords": [
+    "stream",
+    "model",
+    "related",
+    "query",
+    "delay",
+    "fetch",
+    "load",
+    "data",
+    "wait",
+    "fill"
+  ],
   "homepage": "https://github.com/yarsky-tgz/subscribe-for-data#readme",
   "devDependencies": {
     "jsdoc-to-markdown": "^5.0.3"

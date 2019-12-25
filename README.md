@@ -1,6 +1,6 @@
 # subscribe-for-data
 
-Speed booster for multiple related models properties fetching & mixing to your model.
+Fast implementation of multiple related models properties fetching & mixing to your model.
 
 ##   
 
