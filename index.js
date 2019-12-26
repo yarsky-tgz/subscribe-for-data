@@ -35,7 +35,7 @@ function use(defaultOptions) {
    * @returns {Object}
    */
   function makeSubscription(source, outerOptions) {
-    const options = Object.assign({}, outerOptions, defaultOptions);
+    const options = Object.assign({}, defaultOptions, outerOptions);
     const {
       getKey, getCondition, foreignField, baseCondition, defaultValue, targetField, getAddingMethod
     } = options;
