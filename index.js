@@ -28,6 +28,7 @@ function use(defaultOptions) {
    * @param {String} options.foreignField If `getCondition` returns scalar values this field will be used for $in
    * @param {String} options.sourceField field to use of foreign model
    * @param {assignData} options.assignData Do model filling by itself, otherwise use `targetField`
+   * @param {Boolean} options.useTargetId In case the relative model does not have foreignKey, the back relation is provided by target model id (default `false`)
    * @param {getStream} options.getStream returns stream from source and condition (using mongoose model by default)
    * @param {getDataHandler} options.getDataHandler Get data handler for processing related models
    * @param {getAddingMethod} options.getAddingMethod Get `add()` method of future `subscription`
@@ -37,18 +38,19 @@ function use(defaultOptions) {
   function makeSubscription(source, outerOptions) {
     const options = Object.assign({}, defaultOptions, outerOptions);
     const {
-      getKey, getCondition, foreignField, baseCondition, defaultValue, targetField, getAddingMethod
+      getKey, getCondition, foreignField, baseCondition, defaultValue, targetField, getAddingMethod, useTargetId
     } = options;
     options.extractKey = options.extractKey || (foreign => foreign[foreignField]);
     const targets = {};
     const condition = baseCondition || {};
     const inner = [];
     let isConditionSetup = false;
-    awaiting.push({ source, targetField, options, targets, condition });
+    const additions = {useTargetId};
+    awaiting.push({ source, targetField, options, targets, condition, additions });
 
     return {
       add: getAddingMethod({
-        targets, getKey, getCondition, defaultValue, targetField, condition, foreignField, inner, isConditionSetup,
+        targets, getKey, getCondition, defaultValue, targetField, condition, foreignField, inner, isConditionSetup, additions,
       }),
     };
   }
@@ -66,11 +68,11 @@ function use(defaultOptions) {
     const promises = awaiting
       .map(({ source, targetField, options: {
           extractKey, sourceField, getStream, isMultiple, useEachAsync, getDataHandler, parallel, assignData
-        }, targets, condition }) => useEachAsync ?
-        getStream(source, condition).eachAsync(getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField, assignData }),
+        }, targets, condition, additions }) => useEachAsync ?
+        getStream(source, condition).eachAsync(getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField, assignData, additions }),
           { parallel }) :
         new Promise((resolve, reject) => getStream(source, condition)
-          .on('data', getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField, assignData }))
+          .on('data', getDataHandler({ targets, extractKey, isMultiple, targetField, sourceField, assignData, additions }))
           .on('error', reject)
           .on('end', resolve)));
     awaiting.splice(0, awaiting.length);
