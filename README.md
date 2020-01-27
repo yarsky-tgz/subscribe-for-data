@@ -75,12 +75,15 @@ const AnotherRelatedModel = require('./AnotherRelatedModel');
     },
   });
   const roots = [];
-  await RootModel.find({}).cursor().eachAsync((root) => {
+  await RootModel.find({}).cursor().eachAsync((root) =>  
     [relatedSubscription, anotherRelatedSubscription]
       .forEach(subscription => subscription.add(root)); // subscribed
     roots.push(root);
   });
   await fillSubscriptions(); // 2 DB queries executed in parallel, no loops then
+  
+  подождите fillSubscriptions(); // 2 DB запросы выполняются параллельно, затем без скобок
+  
   console.log(roots[0]);
 })();
 ```
@@ -131,26 +134,67 @@ subscribe-for-data
 ### SubscribeForData.makeSubscription(source, options) ⇒ <code>Object</code>
 Creates subscription for related model data
 
+Создаёт подписку для связанных данных модели
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | source | <code>Object</code> | Source model |
 | options | <code>Object</code> | Options |
 | options.targetField | <code>String</code> | field data to be saved into (optional) |
+
+| options.targetField | <code>String</code> | данные поля для сохранения в (optional) |
+
 | options.baseCondition | <code>Object</code> | Base condition |
+
+| options.baseCondition | <code>Object</code> | Базовое состояние |
+
 | options.defaultValue | <code>\*</code> | Default value for field |
-| options.getKey | [<code>getKey</code>](#getKey) | Callback which returns unique key from target model (model.id by default) |
+
+| options.defaultValue | <code>\*</code> | Значение по умолчанию для поля |
+
+ which returns unique key from target model (model.id by default) |
+ которая возвращает уникальный ключ из целевой модели
+
 | options.getCondition | [<code>getCondition</code>](#getCondition) | returns condition, using target model (model.id by default) |
+
+| options.getCondition | [<code>getCondition</code>](#getCondition) | возвращает условие, используя целевую модель (model.id by default) |
 | options.extractKey | [<code>extractKey</code>](#extractKey) | returns unique key of target model from foreign model |
+
+возвращает уникальный ключ целевой модели из внешней модели 
+
 | options.isMultiple | <code>Boolean</code> | if one to many relation |
+
+если одна во многих отношениях
+
 | options.useEachAsync | <code>Boolean</code> | only for mongoose cursor |
+
+только для указателя mongoose
+
 | options.parallel | <code>Number</code> | parallel parameter for `eachAsync` if `useEachAsync` is `true` |
 | options.foreignField | <code>String</code> | If `getCondition` returns scalar values this field will be used for $in |
+
+Если `getCondition возвращается, то скалярные величины этого поля будут использованы для $in |
+
 | options.sourceField | <code>String</code> | field to use of foreign model |
+
+поле для использования внешней модели
+
 | options.assignData | [<code>assignData</code>](#assignData) | Do model filling by itself, otherwise use `targetField` |
+
+Пусть модель заполнится самостоятельно, в противном случае используйте `targetField` |
+
 | options.getStream | [<code>getStream</code>](#getStream) | returns stream from source and condition (using mongoose model by default) |
+
+возвращает поток от источника и состояния (исаолтзуя модель mongoose по умолчанию)
+
 | options.getDataHandler | [<code>getDataHandler</code>](#getDataHandler) | Get data handler for processing related models |
+
+Устанавливает обработчик данных для обработки связанных моделей
+
 | options.getAddingMethod | [<code>getAddingMethod</code>](#getAddingMethod) | Get `add()` method of future `subscription` |
+
+Установить `add()` метод будущего `subscription` |
 
 <a name="SubscribeForData.fillSubscriptions"></a>
 
@@ -223,30 +267,71 @@ get foreign data handler
 | options | <code>Object</code> | Options |
 | options.targets | <code>Object</code> | targets index |
 | options.targetField | <code>String</code> | field data to be saved into |
+
+данные поля для сохранения в
+
 | options.extractKey | [<code>extractKey</code>](#extractKey) | returns unique key of target model from foreign model |
-| options.isMultiple | <code>Boolean</code> | if one to many relation |
+
+возвращает уникальный ключ целевой модели от внешней модели
+
+| options.isMultiple | <code>Boolean</code> | if one to many relation 
+
+если один во многих отношениях
+
 | options.sourceField | <code>String</code> | field to use of foreign model |
+
+поле для использования внешней модели
+
 | options.assignData | [<code>assignData</code>](#assignData) | Do model filling by itself, otherwise use `targetField` |
+
+Пусть модель заполнится самостоятельно, в противном случае используйте `targetField` |
 
 <a name="getAddingMethod"></a>
 
 ## getAddingMethod ⇒ <code>function</code>
 get future `subscription.add()` method
 
+запустите будущий `subscription.add()` метод
+
 **Returns**: <code>function</code> - Callback handling data assignment
+
+**Возвращается**: <code>function</code> - Callback обработка данных
 
 | Param | Type | Description |
 | --- | --- | --- |
 | options | <code>Object</code> | Options |
 | options.targets | <code>Object</code> | targets index |
 | options.getKey | [<code>getKey</code>](#getKey) | Callback which returns unique key from target model (model.id by default) |
+
+Callback , который возвращает уникальный ключ от целевой модели (model.id by default) |
+
 | options.getCondition | [<code>getCondition</code>](#getCondition) | returns condition, using target model (model.id by default) |
+
+возвращает условие, использующее целевую модель (model.id by default) |
+
 | options.defaultValue | <code>\*</code> | Default value for field |
+
+Значение по умолчанию для поля
+
 | options.targetField | <code>String</code> | field data to be saved into |
+
+поле данных для сохранения в 
+
 | options.condition | <code>object</code> | DB Query condition, being prepared |
+ 
+DB условие запроса, предварительно подготовленного
+
 | options.extractKey | [<code>extractKey</code>](#extractKey) | returns unique key of target model from foreign model |
+
+возвращает уникальный ключ целевой модели от внешней модели
+
 | options.foreignField | <code>String</code> | If `getCondition` returns scalar values this field will be used for $in |
+
+возвращает скалярные величины, которые это поле будет использовать для $in
+
 | options.inner | <code>Array</code> | Internal array for condition storing |
+
+внутренний массив для хранения условий
 
 <a name="getStream"></a>
 
